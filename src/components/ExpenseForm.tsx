@@ -17,12 +17,14 @@ export default function ExpenseForm() {
   })
 
   const [error, setError] = useState('')
+  const [previousAmount, setPreviousAmount] = useState(0)
   const { dispatch, state, remainingBudget } = useBudget()
 
   useEffect(() => {
     if(state.editingId){
       const editingExpense = state.expenses.filter( currentExpense => currentExpense.id === state.editingId)[0]
       setExpense(editingExpense)
+      setPreviousAmount(editingExpense.amount)
     }
   }, [state.editingId])
   
@@ -51,7 +53,8 @@ export default function ExpenseForm() {
     }
 
     //validar que no me pase del límite
-    if(expense.amount > remainingBudget){
+    // input:400 - memorizado:200 = 200, el previousAmout es un comodin que me ayuda a memorizar el valora nterior para que pueda restarlo y compara con el disponible
+    if((expense.amount - previousAmount ) > remainingBudget){
       setError('Fuera de presupuesto');
       return
     }
@@ -62,6 +65,16 @@ export default function ExpenseForm() {
     }else{
       dispatch({type:'add-expense', payload:{expense}})
     }
+
+    //reiniciar el state
+    setExpense({
+      amount: 0,
+      expenseName: '',
+      category: '',
+      date: new Date()
+    })
+
+    setPreviousAmount(0)
   }
 
   return (
